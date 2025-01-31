@@ -4,13 +4,19 @@ import io
 
 def transform_pricing_data(input_df):
     """
-    Transforms the input pricing data into the required structured format.
+    Transforms the input pricing data while including PlanCode, RateZone, DateFrom, and DateTo.
     """
+    # Fill missing values in PlanCode, RateZone, DateFrom, and DateTo
+    input_df["PlanCode"] = input_df["PlanCode"].ffill()
+    input_df["RateZone"] = input_df["RateZone"].ffill()
+    input_df["DateFrom"] = input_df["DateFrom"].ffill()
+    input_df["DateTo"] = input_df["DateTo"].ffill()
+
     # Initialize output data list
     output_data = []
 
-    # Extract deductible option names (column headers except 'Age')
-    option_names = input_df.columns[1:]
+    # Extract deductible option names (excluding Age and the new columns)
+    option_names = input_df.columns[1:-4]
 
     # Iterate through deductible options
     for option in option_names:
@@ -41,11 +47,13 @@ def transform_pricing_data(input_df):
             if invoice_component == "Member Premium" or (18 <= age_from <= 23):
                 for age in range(age_from, age_to + 1):
                     output_data.append([
-                        "", "", age, age, invoice_component, premium, premium, premium, option, "", ""
+                        row["PlanCode"], row["RateZone"], age, age, invoice_component,
+                        premium, premium, premium, option, row["DateFrom"], row["DateTo"]
                     ])
             else:
                 output_data.append([
-                    "", "", age_from, age_to, invoice_component, premium, premium, premium, option, "", ""
+                    row["PlanCode"], row["RateZone"], age_from, age_to, invoice_component,
+                    premium, premium, premium, option, row["DateFrom"], row["DateTo"]
                 ])
 
         # Append an empty row to separate different deductible options
@@ -63,14 +71,16 @@ def transform_pricing_data(input_df):
     # Remove InvoiceComponent value in empty divider rows
     df_output.loc[df_output["AgeFrom"].isna(), "InvoiceComponent"] = ""
 
+    # Convert DateFrom and DateTo to M-D-YYYY format without leading zeros
+    df_output["DateFrom"] = pd.to_datetime(df_output["DateFrom"]).dt.strftime('%-m-%-d-%Y')
+    df_output["DateTo"] = pd.to_datetime(df_output["DateTo"]).dt.strftime('%-m-%-d-%Y')
+
     return df_output
 
 # Streamlit UI
 st.title("Insurance Pricing Data Processor")
 
-st.write("**Truly Prices Automation by Reinier**")
-
-st.write("Upload an **Input.xlsx** file to generate the **Output.xlsx** file.")
+st.write("Upload an **Input Excel file** to process and generate the **Output.xlsx** file.")
 
 # File upload
 uploaded_file = st.file_uploader("Upload Input Excel File", type=["xlsx"])
@@ -78,11 +88,10 @@ uploaded_file = st.file_uploader("Upload Input Excel File", type=["xlsx"])
 if uploaded_file is not None:
     st.success("File uploaded successfully!")
 
-    # Read the uploaded Excel file and automatically get the first sheet
+    # Read the uploaded Excel file dynamically
     xls = pd.ExcelFile(uploaded_file)
     sheet_name = xls.sheet_names[0]  # Get the first sheet name
 
-    # Read the first sheet dynamically
     input_df = pd.read_excel(xls, sheet_name=sheet_name)
 
     if st.button("Process Data"):
