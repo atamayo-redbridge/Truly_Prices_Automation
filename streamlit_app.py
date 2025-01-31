@@ -78,8 +78,12 @@ uploaded_file = st.file_uploader("Upload Input Excel File", type=["xlsx"])
 if uploaded_file is not None:
     st.success("File uploaded successfully!")
 
-    # Read the uploaded Excel file
-    input_df = pd.read_excel(uploaded_file, sheet_name="Input")
+    # Read the uploaded Excel file and automatically get the first sheet
+    xls = pd.ExcelFile(uploaded_file)
+    sheet_name = xls.sheet_names[0]  # Get the first sheet name
+
+    # Read the first sheet dynamically
+    input_df = pd.read_excel(xls, sheet_name=sheet_name)
 
     if st.button("Process Data"):
         with st.spinner("Processing..."):
