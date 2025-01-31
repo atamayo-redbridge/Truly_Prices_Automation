@@ -68,7 +68,7 @@ def transform_pricing_data(input_df):
 # Streamlit UI
 st.title("Insurance Pricing Data Processor")
 
-st.write("Truly Prices Automation by Reinier")
+st.write("**Truly Prices Automation by Reinier**")
 
 st.write("Upload an **Input.xlsx** file to generate the **Output.xlsx** file.")
 
