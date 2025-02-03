@@ -72,8 +72,8 @@ def transform_pricing_data(input_df):
     df_output.loc[df_output["AgeFrom"].isna(), "InvoiceComponent"] = ""
 
     # Convert DateFrom and DateTo to M-D-YYYY format without leading zeros
-    df_output["DateFrom"] = pd.to_datetime(df_output["DateFrom"]).dt.strftime('%-m-%-d-%Y')
-    df_output["DateTo"] = pd.to_datetime(df_output["DateTo"]).dt.strftime('%-m-%-d-%Y')
+    df_output["DateFrom"] = pd.to_datetime(df_output["DateFrom"]).dt.strftime('%-m/%-d/%Y')
+    df_output["DateTo"] = pd.to_datetime(df_output["DateTo"]).dt.strftime('%-m/%-d/%Y')
 
     return df_output
 
