@@ -18,8 +18,10 @@ def transform_pricing_data(input_df):
     # Extract deductible option names (excluding Age and the new columns)
     option_names = input_df.columns[1:-4]
 
-    # Iterate through deductible options
+    # Iterate through deductible options (ensuring format is reset for each deductible)
     for option in option_names:
+        row_count = 0  # Reset row counter for each deductible
+
         for _, row in input_df.iterrows():
             age_str = str(row["Age"]).strip()
 
@@ -40,8 +42,10 @@ def transform_pricing_data(input_df):
             # - First 7 rows after the header should be "Member Dependent"
             # - Everything else should be "Member Premium"
             invoice_component = "Member Premium"
-            if len(output_data) < 7:  # First 7 rows after header
+            if row_count < 7:  # First 7 rows for each deductible
                 invoice_component = "Member Dependent"
+
+            row_count += 1  # Increment row count for the current deductible
 
             # Ensure independent members (18-59) are listed individually
             if invoice_component == "Member Premium" or (18 <= age_from <= 23):
