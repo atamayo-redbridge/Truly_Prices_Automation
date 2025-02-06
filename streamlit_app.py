@@ -1,10 +1,12 @@
 import streamlit as st
 import pandas as pd
+import numpy as np
 import io
 
 def transform_pricing_data(input_df):
     """
     Transforms the input pricing data while including PlanCode, RateZone, DateFrom, and DateTo.
+    Ensures numbers are rounded up with no decimals.
     """
     # Fill missing values in PlanCode, RateZone, DateFrom, and DateTo
     input_df["PlanCode"] = input_df["PlanCode"].ffill()
@@ -31,12 +33,15 @@ def transform_pricing_data(input_df):
             else:
                 age_from = age_to = int(age_str)
 
-            # Extract premium value
+            # Extract and round up premium values
             premium = row[option]
 
             # Skip rows where premium is missing or invalid
             if pd.isna(premium):
                 continue
+
+            # Round up premium value
+            premium = np.ceil(premium).astype(int)
 
             # Determine InvoiceComponent:
             # - First 7 rows after the header should be "Member Dependent"
