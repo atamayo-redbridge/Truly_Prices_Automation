@@ -3,10 +3,18 @@ import pandas as pd
 import numpy as np
 import io
 
+# Custom rounding function
+def custom_round(value):
+    decimal_part = value % 1  # Get the decimal part
+    if decimal_part >= 0.5:
+        return int(np.ceil(value))  # Round up
+    else:
+        return int(np.floor(value))  # Round down
+
 def transform_pricing_data(input_df):
     """
     Transforms the input pricing data while including PlanCode, RateZone, DateFrom, and DateTo.
-    Ensures numbers are rounded to the nearest whole number.
+    Ensures numbers are rounded using custom rounding (round half up).
     """
     # Fill missing values in PlanCode, RateZone, DateFrom, and DateTo
     input_df["PlanCode"] = input_df["PlanCode"].ffill()
@@ -33,15 +41,15 @@ def transform_pricing_data(input_df):
             else:
                 age_from = age_to = int(age_str)
 
-            # Extract and round premium values
+            # Extract and round premium values using custom rounding
             premium = row[option]
 
             # Skip rows where premium is missing or invalid
             if pd.isna(premium):
                 continue
 
-            # Round premium value to the nearest whole number
-            premium = np.round(premium).astype(int)
+            # Round premium value using custom rounding
+            premium = custom_round(premium)
 
             # Determine InvoiceComponent:
             # - First 7 rows after the header should be "Member Dependent"
